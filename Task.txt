@@ -1,0 +1,126 @@
+use task;
+
+--tables;
+
+CREATE TABLE customers (
+    customer_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) not null,
+    email VARCHAR(50) unique,
+    address VARCHAR(200) not null
+);
+
+CREATE TABLE orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    total_amount decimal(10,2),
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+CREATE TABLE products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    price INT,
+    description TEXT
+);
+
+
+-- inserting values ;
+
+insert into customers (name,email,address) values ("RAMESH","ram@gmail.com","trichy"),
+("Sharmee","sharmee@gmail.com","Chennai"),
+("SHERINE","SHERINE@gmail.com","KERALA"),
+("Dinesh","deena@gmail.com","namakaal");
+
+insert into orders (customer_id,order_date,total_amount) values (1,"2024-09-01",30.00),
+(2,"2024-09-15",40.00),
+(3,"2024-09-20",80.00),
+(4,"2024-09-25",60.00);
+
+insert into products(name, price,description) values ("value of money",120,"books"),
+("pen",12,"stationery"),
+("remotecar",400,"toys"),
+("tshirt",200,"cloths");
+
+select *from customers;
+select *from orders;
+select * from products;
+
+insert into order_items (order_id,product_id,quantity) values(1,1,1),
+(2,2,4),
+(3,3,2),
+(4,4,1);
+
+-- querys ;
+
+-- 1 Retrieve all customers who have placed an order in the last 30 days.;
+
+select distinct customers.name from customers
+join orders on customers.customer_id = orders.customer_id
+where orders.order_date >= curdate() - interval 30 day;
+
+-- 2 Get the total amount of all orders placed by each customer.;
+
+SELECT customers.name, SUM(orders.total_amount) AS total_spent
+FROM customers
+JOIN orders ON customers.customer_id = orders.customer_id
+GROUP BY customers.name;
+
+-- 3 Update the price of Product C to 45.00.;
+
+UPDATE products 
+SET price = 45.00 
+WHERE product_id = 3;
+
+-- 4 Add a new column discount to the products table.;
+
+ALTER TABLE products
+ADD COLUMN discount DECIMAL(5,2) DEFAULT 00.00;
+
+-- 5; Retrieve the top 3 products with the highest price.;
+
+SELECT * 
+FROM products
+ORDER BY price DESC
+LIMIT 3;
+
+-- 6; Get the names of customers who have ordered Product A.;
+
+SELECT DISTINCT customers.name
+FROM customers
+JOIN orders ON customers.customer_id = orders.customer_id
+JOIN order_items ON orders.order_id = order_items.order_id
+JOIN products ON order_items.product_id = products.product_id
+WHERE products.product_id = 1;
+
+-- 7 Join the orders and customers tables to retrieve the customer's name and order date for each order. ;
+
+SELECT customers.name, orders.order_date
+FROM customers
+JOIN orders ON customers.customer_id = orders.customer_id;
+
+-- 8 Retrieve the orders with a total amount greater than 150.00.
+;
+SELECT *
+FROM orders
+WHERE total_amount > 150.00;
+
+-- 9 Normalize the database by creating a separate table for order items and updating the orders table to reference the order_items table.;
+
+CREATE TABLE order_items (
+id INT AUTO_INCREMENT PRIMARY KEY,
+order_id INT,
+product_id INT,
+quantity INT,
+FOREIGN KEY(order_id) REFERENCES orders(order_id),
+FOREIGN KEY(product_id) REFERENCES products(product_id)
+);
+
+describe order_items;
+
+-- 10 Retrieve the average total of all orders.;
+
+SELECT AVG(total_amount) AS average_total
+FROM orders;
+
+
